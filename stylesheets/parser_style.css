@@ -1,0 +1,28 @@
+body, figure  {
+	margin: 0;
+	font-family: 'Helvetica', sans-serif;
+}
+
+#control {
+	position: absolute;
+	width: 50%;
+	border: none;
+	background: #eeeeee;
+	border-radius: 5px;
+}
+
+input#expression, button#go {
+	font-size: 15pt;
+	border: none;
+	border-radius: 3px;
+	margin: 5% 0%;
+	padding: .3em;
+}
+
+button#go {
+	background: #ffccaa;
+}
+
+input#expression {
+	background: #CCFFAA;
+}
