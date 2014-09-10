@@ -8,14 +8,21 @@
 </head>
 
 <body>
-	<h1>Trigonometric expression parser by V. Klepov</h1>
+	<header>
+		<h1>Trigonometric expression parser by V. Klepov</h1>
+		
+		<menu id="control">
+			<input id="expression" placeholder="Enter the expression"></input>
+			<button id="go">Go</button>
+		</menu>
+	</header>
 	
-	<menu id="control">
-		<input id="expression" placeholder="Enter the expression"></input>
-		<button id="go">Go</button>
-	</menu>
+	<figure id="AST_area">AST goes here</figure>
 	
-	<figure id="AST_area"></figure>
+	<script src="src/parser.js"></script>
+	<script>
+		console.log(parser.parse('2 - hello / (world + id) * 8'));
+	</script>
 </body>
 
 </html>
