@@ -9,7 +9,7 @@
 
 <body>
 	<header>
-		<h1>Trigonometric expression parser by V. Klepov</h1>
+		<h1>Trigonometric expression parser</h1>
 		
 		<menu id="control">
 			<input id="expression" placeholder="Enter the expression"></input>
@@ -21,7 +21,7 @@
 	
 	<script src="src/parser.js"></script>
 	<script>
-		console.log(parser.parse('2 - hello / (world + id) * 8'));
+		console.log(parser.parse('2 - hello / sin(world - cos(-id)) * 8'));
 	</script>
 </body>
 
