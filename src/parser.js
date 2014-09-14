@@ -74,7 +74,7 @@ var parser = (function() {
 						ast.children.push(expr);
 					}
 					var temp = rule.reduce(function(pv, token) {
-						var temp = this.run(tokenList, token);
+						var temp = this.run(tokenList, token, pv);
 						return isExisty(temp)? temp: pv;
 					}.bind(this), null);
 					if (isExisty(temp)) {

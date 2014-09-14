@@ -30,7 +30,7 @@
 				
 				var astroot = parser.parse(expr.value),
 					astnodes = tree.nodes(astroot),
-					astlinks = tree.links(astnodes);				
+					astlinks = tree.links(astnodes);
 				
 				var link = svg.selectAll(".link")
 					.data(astlinks)
@@ -69,7 +69,7 @@
 		output.addEventListener('resize', fitSVG);			
 			
 		var svg = d3.select('#AST_area').append('svg')
-				.attr('transform', 'translate(0, 10)'),
+				.attr('transform', 'translate(0, 20)'),
 			tree = d3.layout.tree(),
 			diagonal = d3.svg.diagonal.radial();		
 		

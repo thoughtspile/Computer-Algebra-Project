@@ -26,6 +26,7 @@ h1 {
 }
 
 input#expression, button#go {
+	border-radius: 0;
 	display: table-cell;
 	font-size: 15pt;
 	height: 1.5em;
@@ -46,6 +47,7 @@ button#go:hover {
 }
 
 input#expression {
+	text-overflow: ellipsis;
 	background: #e8e8dd;
 	padding-left: 1%;
 	padding-right: 1%;
