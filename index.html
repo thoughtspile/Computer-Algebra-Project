@@ -21,7 +21,14 @@
 	
 	<script src="src/parser.js"></script>
 	<script>
-		console.log(parser.parse('2 - hello / sin(world - cos(-id)) * 8'));
+		var expr = document.getElementById('expression'),
+			btn = document.getElementById('go'),
+			output = document.getElementById('AST_area');
+		btn.addEventListener('click', function() {
+			console.time('parse');
+			console.log('parser out:', parser.parse(expr.value));			
+			console.timeEnd('parse');
+		});
 	</script>
 </body>
 

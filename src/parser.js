@@ -12,88 +12,99 @@ var parser = (function() {
 	
 	function Parser() {
 		this.table = {};
-		this.states = [];
-		this.rules = [];
 	}
 	
 	Parser.prototype.isTerminal = function(token) {
-		return this.states.indexOf(token) === -1;
+		return !this.table.hasOwnProperty(token);
 	};
-	
-	Parser.prototype.computeTable = function() {
-		this.rules.forEach(function(rule) {
-			this.table[rule.state] = this.table[rule.state] || {};
-			this.table[rule.state][rule.prefix] = rule.tail;
-		}.bind(this));
-		return this;
-	};
-		
-	Parser.prototype.addRule = function(left, right) {
+			
+	Parser.prototype.addRule = function(left, right, node) {
 		var tail = right.slice(),
 			prefix = null;
 			
 		if(tail.length !== 0 && terminalRegex.test(tail[0]))
 			prefix = tail.shift();
-			
-		this.rules.push({state: left, prefix: prefix, tail: tail});
-		this.states.push(left);
+		
+		this.table[left] = this.table[left] || {};
+		this.table[left][prefix] = {add: tail, node: node};
 		
 		return this;
 	};
 		
 	Parser.prototype.run = function(tokenList) {
 		tokenList = tokenList.slice();
-		this.computeTable();
 		
-		var stack = ['$', 'EXPR'],
-			lookahead = tokenList[0];
-		while (stack.length !== 0) {
-			var expect = stack.pop();
-			
-			if (this.isTerminal(expect)) {
-				if (lookahead.type === expect) {
-					tokenList.shift();
-				} else {
-					throw new Error('expected token ' + expect + ' got ' + lookahead.type);
-				}
-			} else {
-				var stateRules = this.table[expect],
-					rule = null;
-				
-				if (isExisty(stateRules[lookahead.type])) {
-					rule = stateRules[lookahead.type];
-					tokenList.shift();
-				} else if (isExisty(stateRules[null])) {
-					rule = stateRules[null];
-				} else {
-					throw new Error('no matching rule');
-				}
-				
-				stack.push.apply(stack, rule.reverse());
-				rule.reverse();
-			}
-			
-			lookahead = tokenList[0];
-		}
+		var root = this.recrun(tokenList, 'EXPR');
 		
-		if (tokenList.length !== 0)
+		if (tokenList[0].type !== '$')
 			throw new Error('parsing failed');
 		
-		return 'success';
+		return root;
+	};
+	
+	Parser.prototype.recrun = function(tokenList, expect, expr) {
+		var lookahead = tokenList[0];
+		if (this.isTerminal(expect)) {
+			if (lookahead.type === expect) {
+				tokenList.shift();
+			} else {
+				throw new Error('expected token ' + expect + ' got ' + lookahead.type);
+			}
+		} else {
+			var stateRules = this.table[expect],
+				rule = null,
+				node = null;
+			
+			if (isExisty(stateRules[lookahead.type])) {
+				rule = stateRules[lookahead.type].add;
+				node = stateRules[lookahead.type].node;
+				tokenList.shift();
+			} else if (isExisty(stateRules[null])) {
+				rule = stateRules[null].add;
+				node = stateRules[null].node;
+			} else {
+				throw new Error('no matching rule');
+			}
+			
+			var ast = null;
+			if (isExisty(node)) {
+				ast = new node(lookahead.lexeme);
+				ast.children[0] = expr;
+				ast.children[1] = rule.reduce(function(pv, token) {
+					var temp = this.recrun(tokenList, token);
+					return isExisty(temp)? temp: pv;
+				}.bind(this), null);
+			} else {
+				ast = rule.reduce(function(pv, token) {
+					var temp = this.recrun(tokenList, token, pv);
+					return isExisty(temp)? temp: pv;
+				}.bind(this), null);
+			}	
+			return ast;	
+		}
 	};
 
 	
-	function ASTnode(type, lexeme, op) {
-		this.type = type;
+	function AST() {
+		this.classes = {};
+	}
+	
+	AST.prototype.addNodeClass = function(id, op) {
+		var nodeConstructor = ASTnode.bind(null, op);
+		this.classes[id] = nodeConstructor;
+		return this;
+	};
+	
+	function ASTnode(op, selfValue) {
 		this.op = op;
-		this.selfValue = lexeme;
-		this._value = null;
 		this.children = [];
+		this.selfValue = selfValue;
+		this._value = null;
 	};
 	
 	ASTnode.prototype.value = function() {
 		this._value = this.op(this.selfValue, this.children.map(function(node) {
-			return this.child.value();
+			return node.value();
 		}));
 		return this._value;
 	};
@@ -139,7 +150,7 @@ var parser = (function() {
 		
 		tokens.push({type: '$', lexeme: ''});
 		
-		console.log(tokens);
+		console.log('lexer out:', tokens);
 		
 		return tokens;
 	}
@@ -149,25 +160,55 @@ var parser = (function() {
 			.addPattern('plusminus', /^[+-]/)
 			.addPattern('multdiv', /^[*/]/)
 			.addPattern('literal', /^[A-Za-z_$]+[A_Za-z_$0-9]*|^[0-9]*.[0-9]+|^[0-9]+/)
-			//.addPattern('constant', /^pi|^e/)
 			.addPattern('func', /^sin|^cos|^tan|^cot/)
 			.addPattern('lparen', /^[(]/)
-			//.addPattern('separator', /^[;,]/)
 			.addPattern('rparen', /^[)]/)
 			.addPattern('space', /^\s+/, {ignore: true}),
+		trigTree = new AST()
+			.addNodeClass('literal', function(self) {
+				return parseFloat(self) || self;
+			})
+			.addNodeClass('call', function(self, children) {
+				return Math[self](children[0]);
+			})
+			.addNodeClass('sum', function(self, children) {
+				if (self === '+')
+					return children[0] + children[1];
+				else
+					return children[0] - children[1];
+			})
+			.addNodeClass('times', function(self, children) {
+				if (self === '*')
+					return children[0] * children[1];
+				else 
+					return children[0] / children[1];
+			})
+			.addNodeClass('unary', function(self, children) {
+				if (self === '+')
+					return children[0];
+				else
+					return -children[0];
+			}),
 		trigParser = new Parser()
 			.addRule('EXPR', ['TERM', 'EXPR_TAIL'])  
-			.addRule('EXPR_TAIL', ['plusminus', 'TERM', 'EXPR_TAIL'], {}) // add
+			.addRule('EXPR_TAIL', ['plusminus', 'TERM', 'EXPR_TAIL'], trigTree.classes.sum, 'in')
 			.addRule('EXPR_TAIL', [])  
-			.addRule('TERM', ['plusminus', 'TERM'], {}) // unary
+			.addRule('TERM', ['plusminus', 'TERM'], trigTree.classes.unary, 'pre')
 			.addRule('TERM', ['FACTOR', 'TERM_TAIL'])
-			.addRule('TERM_TAIL', ['multdiv', 'FACTOR', 'TERM_TAIL'], {}) // mult
+			.addRule('TERM_TAIL', ['multdiv', 'FACTOR', 'TERM_TAIL'], trigTree.classes.times, 'in')
 			.addRule('TERM_TAIL', [])
-			.addRule('FACTOR', ['plusminus', 'FACTOR'], {}) // unary
+			.addRule('FACTOR', ['plusminus', 'FACTOR'], trigTree.classes.unary, 'pre')
 			.addRule('FACTOR', ['ARG'])
-			.addRule('ARG', ['literal'], {}) // value
-			.addRule('ARG', ['func', 'ARG'], {}) // call site
+			.addRule('ARG', ['literal'], trigTree.classes.literal, 'post')
+			.addRule('ARG', ['func', 'ARG'], trigTree.classes.call, 'pre')
 			.addRule('ARG', ['lparen', 'EXPR', 'rparen']);
+	
+	var test = new trigTree.classes['times']();
+	test.selfValue = '/';
+	test.children = [
+		{value: function() {return 111;}}, 
+		{value: function() {return 2;}}
+	];
 	
 	var parse = function(str) {
 		return trigParser.run(trigTokenizer.run(str));
