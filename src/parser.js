@@ -69,11 +69,18 @@ var parser = (function() {
 				var ast = null;
 				if (isExisty(node)) {
 					ast = new node(lookahead.lexeme);
-					ast.children[0] = expr;
-					ast.children[1] = rule.reduce(function(pv, token) {
+					if (isExisty(expr)) {
+						expr.parent = ast;
+						ast.children.push(expr);
+					}
+					var temp = rule.reduce(function(pv, token) {
 						var temp = this.run(tokenList, token);
 						return isExisty(temp)? temp: pv;
 					}.bind(this), null);
+					if (isExisty(temp)) {
+						temp.parent = ast;
+						ast.children.push(temp);
+					}
 				} else {
 					ast = rule.reduce(function(pv, token) {
 						var temp = this.run(tokenList, token, pv);

@@ -55,17 +55,15 @@ input#expression {
 
 #AST_area {
 	width: 100%;
-	height: 100%;
+	padding: 3% 5% 0% 5%;
+	height: 80%;
 	position: fixed;
 }
 
 
-.node circle {
-	fill: #222;
-}
-
 .node {
-	font-size: 10pt;
+	fill: #333;
+	font-size: 15pt;
 }
 
 .link {
