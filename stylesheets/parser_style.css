@@ -61,17 +61,15 @@ input#expression {
 
 
 .node circle {
-  fill: #fff;
-  stroke: steelblue;
-  stroke-width: 1.5px;
+	fill: #222;
 }
 
 .node {
-  font: 10px sans-serif;
+	font-size: 10pt;
 }
 
 .link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 1.5px;
+	fill: none;
+	stroke: #ddd;
+	stroke-width: 1px;
 }
