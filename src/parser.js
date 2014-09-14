@@ -155,6 +155,9 @@ var parser = (function() {
 		return tokens;
 	}
 	
+	
+	// configure
+	
 	var trigTokenizer = new Tokenizer()
 			.addPattern('plusminus', /^[+-]/)
 			.addPattern('multdiv', /^[*/]/)
@@ -201,14 +204,6 @@ var parser = (function() {
 			.addRule('ARG', ['literal'], trigTree.classes.literal, 'post')
 			.addRule('ARG', ['func', 'ARG'], trigTree.classes.call, 'pre')
 			.addRule('ARG', ['lparen', 'EXPR', 'rparen']);
-	
-	var test = new trigTree.classes['times']();
-	test.selfValue = '/';
-	test.children = [
-		{value: function() {return 111;}}, 
-		{value: function() {return 2;}}
-	];
-	
 	var parse = function(str) {
 		return trigParser.run(trigTokenizer.run(str));
 	};
