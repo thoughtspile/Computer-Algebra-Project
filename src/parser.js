@@ -155,11 +155,10 @@ var parser = (function() {
 		return tokens;
 	}
 	
-	
 	var trigTokenizer = new Tokenizer()
 			.addPattern('plusminus', /^[+-]/)
 			.addPattern('multdiv', /^[*/]/)
-			.addPattern('literal', /^[A-Za-z_$]+[A_Za-z_$0-9]*|^[0-9]*.[0-9]+|^[0-9]+/)
+			.addPattern('literal', /^[A-Za-z_$]+[A_Za-z_$0-9]*|^[0-9]*\.[0-9]+|^[0-9]+/)
 			.addPattern('func', /^sin|^cos|^tan|^cot/)
 			.addPattern('lparen', /^[(]/)
 			.addPattern('rparen', /^[)]/)
