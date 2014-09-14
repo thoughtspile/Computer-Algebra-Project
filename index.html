@@ -23,12 +23,13 @@
 	<script>
 		var expr = document.getElementById('expression'),
 			btn = document.getElementById('go'),
-			output = document.getElementById('AST_area');
-		btn.addEventListener('click', function() {
-			console.time('parse');
-			console.log('parser out:', parser.parse(expr.value));			
-			console.timeEnd('parse');
-		});
+			output = document.getElementById('AST_area'),
+			update = function() {
+				console.log('parser out:', parser.parse(expr.value));
+			};
+		
+		btn.addEventListener('click', update);
+		expr.addEventListener('change', update);
 	</script>
 </body>
 

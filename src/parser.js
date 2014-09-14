@@ -31,56 +31,57 @@ var parser = (function() {
 		return this;
 	};
 		
-	Parser.prototype.run = function(tokenList) {
-		tokenList = tokenList.slice();
-		
-		var root = this.recrun(tokenList, 'EXPR');
-		
-		if (tokenList[0].type !== '$')
-			throw new Error('parsing failed');
-		
-		return root;
-	};
-	
-	Parser.prototype.recrun = function(tokenList, expect, expr) {
-		var lookahead = tokenList[0];
-		if (this.isTerminal(expect)) {
-			if (lookahead.type === expect) {
-				tokenList.shift();
-			} else {
-				throw new Error('expected token ' + expect + ' got ' + lookahead.type);
-			}
+	Parser.prototype.run = function(tokenList, expect, expr) {
+		if (!isExisty(expect)) {
+			tokenList = tokenList.slice();
+			
+			var root = this.run(tokenList, 'EXPR');
+			
+			if (tokenList[0].type !== '$')
+				throw new Error('parsing failed');
+			tokenList.pop();
+			
+			return root;
 		} else {
-			var stateRules = this.table[expect],
-				rule = null,
-				node = null;
-			
-			if (isExisty(stateRules[lookahead.type])) {
-				rule = stateRules[lookahead.type].add;
-				node = stateRules[lookahead.type].node;
-				tokenList.shift();
-			} else if (isExisty(stateRules[null])) {
-				rule = stateRules[null].add;
-				node = stateRules[null].node;
+			var lookahead = tokenList[0];
+			if (this.isTerminal(expect)) {
+				if (lookahead.type === expect) {
+					tokenList.shift();
+				} else {
+					throw new Error('expected token ' + expect + ' got ' + lookahead.type);
+				}
 			} else {
-				throw new Error('no matching rule');
+				var stateRules = this.table[expect],
+					rule = null,
+					node = null;
+				
+				if (isExisty(stateRules[lookahead.type])) {
+					rule = stateRules[lookahead.type].add;
+					node = stateRules[lookahead.type].node;
+					tokenList.shift();
+				} else if (isExisty(stateRules[null])) {
+					rule = stateRules[null].add;
+					node = stateRules[null].node;
+				} else {
+					throw new Error('no matching rule');
+				}
+				
+				var ast = null;
+				if (isExisty(node)) {
+					ast = new node(lookahead.lexeme);
+					ast.children[0] = expr;
+					ast.children[1] = rule.reduce(function(pv, token) {
+						var temp = this.run(tokenList, token);
+						return isExisty(temp)? temp: pv;
+					}.bind(this), null);
+				} else {
+					ast = rule.reduce(function(pv, token) {
+						var temp = this.run(tokenList, token, pv);
+						return isExisty(temp)? temp: pv;
+					}.bind(this), null);
+				}	
+				return ast;	
 			}
-			
-			var ast = null;
-			if (isExisty(node)) {
-				ast = new node(lookahead.lexeme);
-				ast.children[0] = expr;
-				ast.children[1] = rule.reduce(function(pv, token) {
-					var temp = this.recrun(tokenList, token);
-					return isExisty(temp)? temp: pv;
-				}.bind(this), null);
-			} else {
-				ast = rule.reduce(function(pv, token) {
-					var temp = this.recrun(tokenList, token, pv);
-					return isExisty(temp)? temp: pv;
-				}.bind(this), null);
-			}	
-			return ast;	
 		}
 	};
 
@@ -150,8 +151,7 @@ var parser = (function() {
 		
 		tokens.push({type: '$', lexeme: ''});
 		
-		console.log('lexer out:', tokens);
-		
+		console.log('lexer out:', tokens);		
 		return tokens;
 	}
 	

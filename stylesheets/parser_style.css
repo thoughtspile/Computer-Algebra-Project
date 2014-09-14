@@ -6,33 +6,44 @@ body, figure  {
 header {
 	width: 100%;
 	height: 20%;
-	background: #EEEEEE;
+	display: table;
+	background: #eeeeee;
+	padding: 1% 0% 2% 0%;
 }
 
-#AST_area {
-	width: 100%;
-	height: 80%;
-	background: #FFFFAA;
+h1 {
+	display: table-cell;
+	width: 35%;
+	padding-left: 5%;
 }
 
 #control {
-	width: 50%;
-	border: none;
-	border-radius: 5px;
+	display: table-cell;
+	width: 55%;
+	padding-right: 5%;
 }
 
 input#expression, button#go {
+	display: table-cell;
 	font-size: 15pt;
 	border: none;
-	border-radius: 3px;
-	margin: 5% 0%;
-	padding: .3em;
+	padding: 0;
 }
 
 button#go {
+	width: 10%;
 	background: #ffccaa;
 }
 
 input#expression {
-	background: #CCFFAA;
+	width: 90%;
+	background: #ccffaa;
+}
+
+#AST_area {
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	text-align: center;
+	background: #FFFFAA;
 }
