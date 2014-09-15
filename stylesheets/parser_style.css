@@ -39,6 +39,7 @@ button#go {
 	color: #3d3d3d;
 	font-weight: bold;
 	width: 10%;
+	min-width: 2em;
 }
 
 button#go:hover {
@@ -52,11 +53,12 @@ input#expression {
 	padding-left: 1%;
 	padding-right: 1%;
 	width: 88%;
+	min-width: 6em;
 }
 
 
 #AST_area {
-	width: 100%;
+	width: 90%;
 	padding: 3% 5% 0% 5%;
 	height: 80%;
 	position: fixed;
@@ -66,6 +68,11 @@ input#expression {
 .node {
 	fill: #333;
 	font-size: 15pt;
+}
+
+.cumulative {
+	fill: #999;
+	font-size: 11pt;
 }
 
 .link {

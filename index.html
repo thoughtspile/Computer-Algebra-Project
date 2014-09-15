@@ -12,7 +12,7 @@
 		<h1>Trigonometric expression parser</h1>
 		
 		<menu id="control">
-			<input id="expression" placeholder="Enter the expression"></input>
+			<input id="expression" placeholder="Enter the expression" value="sin(3 * x) + tan 3 - -3.14"></input>
 			<button id="go">Go</button>
 		</menu>
 	</header>
@@ -25,18 +25,25 @@
 		var expr = document.getElementById('expression'),
 			btn = document.getElementById('go'),
 			output = document.getElementById('AST_area'),
+			
+			svg = d3.select('#AST_area').append('svg')
+				.attr('transform', 'translate(0, 20)'),
+			tree = d3.layout.tree(),
+			diagonal = d3.svg.diagonal.radial(),
+			q
 			update = function() {
-				svg.selectAll("*").remove();
+				svg.selectAll('*').remove();
 				
-				var astroot = parser.parse(expr.value),
-					astnodes = tree.nodes(astroot),
+				var astroot = parser.parse(expr.value);
+				astroot.value();
+				var astnodes = tree.nodes(astroot),
 					astlinks = tree.links(astnodes);
 				
-				var link = svg.selectAll(".link")
+				var link = svg.selectAll('.link')
 					.data(astlinks)
-					.enter().append("path")
-					.attr("class", "link")
-					.attr("d", diagonal);
+					.enter().append('path')
+					.attr('class', 'link')
+					.attr('d', diagonal);
 
 				var node = svg.selectAll(".node")
 					.data(astnodes)
@@ -50,10 +57,19 @@
 					.attr("r", 2);
 
 				node.append("text")
+					.attr('text-anchor', 'end')
+					.attr("dy", "5pt")
+					.attr('dx', '-4pt')
+					.text(function(d) {
+						return d.selfValue;
+					});
+				
+				node.append("text")
+					.attr("class", "cumulative")
 					.attr("dy", "5pt")
 					.attr('dx', '4pt')
 					.text(function(d) {
-						return d.selfValue;
+						return d._value;
 					});
 			},
 			fitSVG = function() {
@@ -61,20 +77,16 @@
 					w = parseFloat(astDims.getPropertyValue('width')),
 					h = parseFloat(astDims.getPropertyValue('height'));
 				svg.attr('width', w).attr('height', h);
-				tree.size([.8 * w, .9 * h]);
+				tree.size([w, h - 40]);
+				
+				update();
 			};
 		
 		btn.addEventListener('click', update);
 		expr.addEventListener('change', update);
-		output.addEventListener('resize', fitSVG);			
-			
-		var svg = d3.select('#AST_area').append('svg')
-				.attr('transform', 'translate(0, 20)'),
-			tree = d3.layout.tree(),
-			diagonal = d3.svg.diagonal.radial();		
+		window.addEventListener('resize', fitSVG);
 		
 		fitSVG();
-		update();
 	</script>
 </body>
 

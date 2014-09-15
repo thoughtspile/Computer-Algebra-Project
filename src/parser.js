@@ -69,24 +69,36 @@ var parser = (function() {
 				var ast = null;
 				if (isExisty(node)) {
 					ast = new node(lookahead.lexeme);
+					console.log('enter', lookahead.lexeme);
 					if (isExisty(expr)) {
 						expr.parent = ast;
 						ast.children.push(expr);
 					}
-					var temp = rule.reduce(function(pv, token) {
-						var temp = this.run(tokenList, token, pv);
-						return isExisty(temp)? temp: pv;
-					}.bind(this), null);
-					if (isExisty(temp)) {
-						temp.parent = ast;
-						ast.children.push(temp);
+					
+					// first match is the right child.
+					// any following match overrides ast as current node
+					
+					var first = true,
+						left = null;
+					for (var i = 0; i < rule.length; i++) {
+						var temp = this.run(tokenList, rule[i], left);
+						if (isExisty(temp) && first) {
+							ast.children.push(temp);
+							temp.parent = ast;
+							first = false;
+							left = ast;
+						} else if (isExisty(temp)) {
+							ast = temp;
+							left = ast;
+						}
 					}
 				} else {
 					ast = rule.reduce(function(pv, token) {
 						var temp = this.run(tokenList, token, pv);
 						return isExisty(temp)? temp: pv;
 					}.bind(this), null);
-				}	
+				}
+				console.log('up');
 				return ast;	
 			}
 		}
@@ -208,12 +220,12 @@ var parser = (function() {
 			.addRule('TERM_TAIL', [])
 			.addRule('FACTOR', ['plusminus', 'FACTOR'], trigTree.classes.unary, 'pre')
 			.addRule('FACTOR', ['ARG'])
-			.addRule('ARG', ['literal'], trigTree.classes.literal, 'post')
+			.addRule('ARG', ['literal'], trigTree.classes.literal)
 			.addRule('ARG', ['func', 'ARG'], trigTree.classes.call, 'pre')
-			.addRule('ARG', ['lparen', 'EXPR', 'rparen']);
-	var parse = function(str) {
-		return trigParser.run(trigTokenizer.run(str));
-	};
+			.addRule('ARG', ['lparen', 'EXPR', 'rparen']),
+		parse = function(str) {
+			return trigParser.run(trigTokenizer.run(str));
+		};
 	
 	// export
 
