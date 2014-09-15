@@ -179,18 +179,20 @@ var parser = (function() {
 	
 	var trigTokenizer = new Tokenizer()
 			.addPattern('plusminus', /^[+-]/)
+			.addPattern('exp', /^\^/)
 			.addPattern('multdiv', /^[*/]/)
 			.addPattern('literal', /^[A-Za-z_$]+[A_Za-z_$0-9]*|^[0-9]*\.[0-9]+|^[0-9]+/)
-			.addPattern('func', /^sin|^cos|^tan|^cot/)
-			.addPattern('lparen', /^[(]/)
-			.addPattern('rparen', /^[)]/)
+			.addPattern('func', /^sin|^cos|^tan|^cot/i)
+			.addPattern('constant', /^pi/i)
+			.addPattern('lparen', /^\(/)
+			.addPattern('rparen', /^\)/)
 			.addPattern('space', /^\s+/, {ignore: true}),
 		trigTree = new AST()
 			.addNodeClass('literal', function(self) {
 				return parseFloat(self) || self;
 			})
 			.addNodeClass('call', function(self, children) {
-				return Math[self](children[0]);
+				return Math[self.toLowerCase()](children[0]);
 			})
 			.addNodeClass('sum', function(self, children) {
 				if (self === '+')
@@ -209,6 +211,12 @@ var parser = (function() {
 					return children[0];
 				else
 					return -children[0];
+			})
+			.addNodeClass('pow', function(self, children) {
+				return Math.pow(children[0], children[1]);
+			})
+			.addNodeClass('constant', function(self) {
+				return Math[self.toUpperCase()];
 			}),
 		trigParser = new Parser()
 			.addRule('EXPR', ['TERM', 'EXPR_TAIL'])  
@@ -219,7 +227,10 @@ var parser = (function() {
 			.addRule('TERM_TAIL', ['multdiv', 'FACTOR', 'TERM_TAIL'], trigTree.classes.times, 'in')
 			.addRule('TERM_TAIL', [])
 			.addRule('FACTOR', ['plusminus', 'FACTOR'], trigTree.classes.unary, 'pre')
-			.addRule('FACTOR', ['ARG'])
+			.addRule('FACTOR', ['ARG', 'FACTOR_TAIL'])
+			.addRule('FACTOR_TAIL', ['exp', 'ARG', 'FACTOR_TAIL'], trigTree.classes.pow)
+			.addRule('FACTOR_TAIL', [])
+			.addRule('ARG', ['constant'], trigTree.classes.constant)
 			.addRule('ARG', ['literal'], trigTree.classes.literal)
 			.addRule('ARG', ['func', 'ARG'], trigTree.classes.call, 'pre')
 			.addRule('ARG', ['lparen', 'EXPR', 'rparen']),
