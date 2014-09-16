@@ -5,6 +5,13 @@ var parser = (function() {
 		return typeof(obj) !== 'undefined' && obj !== null;
 	};
 
+	function ParseError(message, position) {
+		this.name = 'ParseError';
+		this.message = message || '';
+		this.position = position || 0;
+	}
+	ParseError.prototype = new Error();
+	ParseError.prototype.constructor = ParseError;
 	
 	// parser
 	
@@ -37,8 +44,9 @@ var parser = (function() {
 			
 			var root = this.run(tokenList, 'EXPR');
 			
-			if (tokenList[0].type !== '$')
-				throw new Error('parsing failed');
+			if (tokenList[0].type !== '$') {
+				throw new ParseError('End not reached', tokenList[0].start);
+			}				
 			tokenList.pop();
 			
 			return root;
@@ -48,7 +56,7 @@ var parser = (function() {
 				if (lookahead.type === expect) {
 					tokenList.shift();
 				} else {
-					throw new Error('expected token ' + expect + ' got ' + lookahead.type);
+					throw new ParseError('Expected token ' + expect + ' got ' + lookahead.type, lookahead.start);
 				}
 			} else {
 				var stateRules = this.table[expect],
@@ -63,13 +71,12 @@ var parser = (function() {
 					rule = stateRules[null].add;
 					node = stateRules[null].node;
 				} else {
-					throw new Error('no matching rule');
+					throw new ParseError('No matching rule', lookahead.start);
 				}
 				
 				var ast = null;
 				if (isExisty(node)) {
 					ast = new node(lookahead.lexeme);
-					console.log('enter', lookahead.lexeme);
 					if (isExisty(expr)) {
 						expr.parent = ast;
 						ast.children.push(expr);
@@ -98,7 +105,6 @@ var parser = (function() {
 						return isExisty(temp)? temp: pv;
 					}.bind(this), null);
 				}
-				console.log('up');
 				return ast;	
 			}
 		}
@@ -123,7 +129,7 @@ var parser = (function() {
 	};
 	
 	ASTnode.prototype.value = function() {
-		this._value = this.op(this.selfValue, this.children.map(function(node) {
+		this._value = this._value || this.op(this.selfValue, this.children.map(function(node) {
 			return node.value();
 		}));
 		return this._value;
@@ -134,6 +140,7 @@ var parser = (function() {
 	function Tokenizer() {
 		this.patterns = {};
 		this.tokenClasses = [];
+		this.pos = 0;
 		
 		this.addPattern('error', /^.+/);
 	}
@@ -151,6 +158,7 @@ var parser = (function() {
 			if (isExisty(match)) {
 				token.type = name;
 				token.lexeme = match[0];
+				token.start = this.pos;
 			}
 		}.bind(this));
 		return token;
@@ -158,14 +166,16 @@ var parser = (function() {
 	
 	Tokenizer.prototype.run = function(str) {
 		var tokens = [];
+		this.pos = 0;
 			
 		while (str.length !== 0) {
 			var token = this.getNextToken(str);
 			if (token.type == 'error')
-				throw new Error('Tokenization fail: ' + token.lexeme);
+				throw new ParseError('Tokenization fail: ' + token.lexeme, token.start);
 			else if (token.type !== 'space')
 				tokens.push(token);
 			str = str.substr(token.lexeme.length);
+			this.pos += token.lexeme.length;
 		}
 		
 		tokens.push({type: '$', lexeme: ''});
@@ -181,15 +191,19 @@ var parser = (function() {
 			.addPattern('plusminus', /^[+-]/)
 			.addPattern('exp', /^\^/)
 			.addPattern('multdiv', /^[*/]/)
-			.addPattern('literal', /^[A-Za-z_$]+[A_Za-z_$0-9]*|^[0-9]*\.[0-9]+|^[0-9]+/)
+			.addPattern('number', /^[0-9]*\.[0-9]+|^[0-9]+/)
+			.addPattern('variable', /^[A-Za-z_$]+[A_Za-z_$0-9]*/)
 			.addPattern('func', /^sin|^cos|^tan|^cot/i)
 			.addPattern('constant', /^pi/i)
 			.addPattern('lparen', /^\(/)
 			.addPattern('rparen', /^\)/)
 			.addPattern('space', /^\s+/, {ignore: true}),
 		trigTree = new AST()
-			.addNodeClass('literal', function(self) {
-				return parseFloat(self) || self;
+			.addNodeClass('number', function(self) {
+				return parseFloat(self);
+			})
+			.addNodeClass('variable', function(self) {
+				return self;
 			})
 			.addNodeClass('call', function(self, children) {
 				return Math[self.toLowerCase()](children[0]);
@@ -220,19 +234,21 @@ var parser = (function() {
 			}),
 		trigParser = new Parser()
 			.addRule('EXPR', ['TERM', 'EXPR_TAIL'])  
-			.addRule('EXPR_TAIL', ['plusminus', 'TERM', 'EXPR_TAIL'], trigTree.classes.sum, 'in')
+			.addRule('EXPR_TAIL', ['plusminus', 'TERM', 'EXPR_TAIL'], trigTree.classes.sum)
 			.addRule('EXPR_TAIL', [])  
-			.addRule('TERM', ['plusminus', 'TERM'], trigTree.classes.unary, 'pre')
+			.addRule('TERM', ['plusminus', 'TERM'], trigTree.classes.unary)
 			.addRule('TERM', ['FACTOR', 'TERM_TAIL'])
-			.addRule('TERM_TAIL', ['multdiv', 'FACTOR', 'TERM_TAIL'], trigTree.classes.times, 'in')
+			.addRule('TERM_TAIL', ['multdiv', 'FACTOR', 'TERM_TAIL'], trigTree.classes.times)
 			.addRule('TERM_TAIL', [])
-			.addRule('FACTOR', ['plusminus', 'FACTOR'], trigTree.classes.unary, 'pre')
+			.addRule('FACTOR', ['plusminus', 'FACTOR'], trigTree.classes.unary)
 			.addRule('FACTOR', ['ARG', 'FACTOR_TAIL'])
 			.addRule('FACTOR_TAIL', ['exp', 'ARG', 'FACTOR_TAIL'], trigTree.classes.pow)
 			.addRule('FACTOR_TAIL', [])
 			.addRule('ARG', ['constant'], trigTree.classes.constant)
-			.addRule('ARG', ['literal'], trigTree.classes.literal)
-			.addRule('ARG', ['func', 'ARG'], trigTree.classes.call, 'pre')
+			.addRule('ARG', ['plusminus', 'ARG'], trigTree.classes.unary)
+			.addRule('ARG', ['variable'], trigTree.classes.variable)
+			.addRule('ARG', ['number'], trigTree.classes.number)
+			.addRule('ARG', ['func', 'ARG'], trigTree.classes.call)
 			.addRule('ARG', ['lparen', 'EXPR', 'rparen']),
 		parse = function(str) {
 			return trigParser.run(trigTokenizer.run(str));

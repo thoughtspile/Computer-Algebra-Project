@@ -9,12 +9,11 @@
 
 <body>
 	<header>
-		<h1>Trigonometric expression parser</h1>
-		
-		<menu id="control">
-			<input id="expression" placeholder="Enter the expression" value="sin(3 * x) + tan 3 - -3.14"></input>
-			<button id="go">Go</button>
-		</menu>
+		<h1 id="logo">Trigonometric expression parser</h1><!--		
+	 --><menu id="control"><!--
+		 --><div id="expression" contenteditable="true">sin(3 * x) + tan 3 - -3.14</div><!--
+		 --><button id="go">Go</button><!--
+	 --></menu>
 	</header>
 	
 	<figure id="AST_area"></figure>
@@ -30,12 +29,20 @@
 				.attr('transform', 'translate(0, 20)'),
 			tree = d3.layout.tree(),
 			diagonal = d3.svg.diagonal.radial(),
-			q
 			update = function() {
-				svg.selectAll('*').remove();
+				expr.innerHTML = expr.innerHTML.replace(/<(.*?)>/g, '');
+				try {
+					var astroot = parser.parse(expr.innerHTML);
+					astroot.value();
+				} catch (err) {
+					var start = err.position,
+						current = expr.innerHTML;
+					expr.innerHTML = current.substr(0, start) + '<span id="error">' + current.substr(start) + '</span>';
+					console.log(err.message);
+				}
 				
-				var astroot = parser.parse(expr.value);
-				astroot.value();
+				svg.selectAll('*').remove();
+					
 				var astnodes = tree.nodes(astroot),
 					astlinks = tree.links(astnodes);
 				
@@ -84,6 +91,12 @@
 		
 		btn.addEventListener('click', update);
 		expr.addEventListener('change', update);
+		expr.addEventListener('keypress', function(e) {
+			if (e.keyCode == 13) {
+				e.preventDefault();
+				update();
+			}
+		});
 		window.addEventListener('resize', fitSVG);
 		
 		fitSVG();
