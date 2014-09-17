@@ -1,17 +1,18 @@
 <!doctype html>
 
-<html lang="en">
+<html lang="ru">
 
 <head>
-	<title>Computer Algebra Project</title>
-	<link rel="stylesheet" type="text/css" href="stylesheets/parser_style.css" media="screen" />
+	<meta charset = "utf-8">
+	<title>Компьютерная алгебра</title>
+	<link rel = "stylesheet" type = "text/css" href = "stylesheets/parser_style.css" media = "screen" />
 </head>
 
 <body>
 	<header>
-		<h1 id="logo">Trigonometric expression parser</h1><!--		
+		<h1 id="logo">Парсим с Владимиром К.</h1><!--		
 	 --><menu id="control"><!--
-		 --><div id="expression" contenteditable="true">sin(3 * x) + tan 3 - -3.14</div><!--
+		 --><div id="expression" contenteditable="true">sin(3 / 2 * pi) + tan 3.1 - -var</div><!--
 		 --><button id="go">Go</button><!--
 	 --></menu>
 	</header>
@@ -20,92 +21,50 @@
 	
 	<script src="libs/d3.min.js"></script>
 	<script src="src/parser.js"></script>
+	<script src="src/gui.js"></script>
 	<script>
 		var expr = document.getElementById('expression'),
-			btn = document.getElementById('go'),
-			output = document.getElementById('AST_area'),
-			
-			svg = d3.select('#AST_area').append('svg')
-				.attr('transform', 'translate(0, 20)'),
-			tree = d3.layout.tree(),
-			diagonal = d3.svg.diagonal.radial(),
 			update = function() {
 				var range = window.getSelection().getRangeAt(0),
-					offset = range.startOffset
+					offset = range.startOffset,
 					needsPreserve = range.startContainer.parentNode === expr;
-					
-				expr.innerHTML = expr.innerHTML.replace(/<(.*?)>/g, '');
+				unmarkError();
+				
 				try {
 					var astroot = parser.parse(expr.innerHTML);
 					astroot.value();
+					d3renderer.draw(astroot);
 				} catch (err) {
-					var start = err.position,
-						current = expr.innerHTML;
-					expr.innerHTML = current.substr(0, start) + '<span id="error">' + current.substr(start) + '</span>';
+					markError(err.position);
 					console.log(err.message);
 				}
-				
-				svg.selectAll('*').remove();
-					
-				var astnodes = tree.nodes(astroot),
-					astlinks = tree.links(astnodes);
-				
-				var link = svg.selectAll('.link')
-					.data(astlinks)
-					.enter().append('path')
-					.attr('class', 'link')
-					.attr('d', diagonal);
-
-				var node = svg.selectAll(".node")
-					.data(astnodes)
-					.enter().append("g")
-					.attr("class", "node")
-					.attr("transform", function(d) {
-						return "translate(" + d.x + "," + d.y + ")";
-					});
-
-				node.append("circle")
-					.attr("r", 2);
-
-				node.append("text")
-					.attr('text-anchor', 'end')
-					.attr("dy", "5pt")
-					.attr('dx', '-4pt')
-					.text(function(d) {
-						return d.selfValue;
-					});
-				
-				node.append("text")
-					.attr("class", "cumulative")
-					.attr("dy", "5pt")
-					.attr('dx', '4pt')
-					.text(function(d) {
-						return d._value;
-					});
 				
 				if (needsPreserve)
 					range.setStart(expr.childNodes[0], offset);
 			},
-			fitSVG = function() {
-				var astDims = window.getComputedStyle(output),
-					w = parseFloat(astDims.getPropertyValue('width')),
-					h = parseFloat(astDims.getPropertyValue('height'));
-				svg.attr('width', w).attr('height', h);
-				tree.size([w, h - 40]);
-				
+			markError = function(pos) {
+				var current = expr.innerHTML;
+				expr.innerHTML = current.substr(0, pos) + '<span id="error">' + current.substr(pos) + '</span>';
+			},
+			unmarkError = function() {
+				expr.innerHTML = expr.innerHTML.replace(/<(.*?)>/g, '');
+			},
+			fitSVG = function(output) {
+				d3renderer.resizeToFit();
 				update();
 			};
+			
 		
-		btn.addEventListener('click', update);
-		expr.addEventListener('change', update);
+		document.getElementById('go').addEventListener('click', update);
 		expr.addEventListener('keypress', function(e) {
-			if (e.keyCode == 13) {
+			if (e.keyCode === 13) {
 				e.preventDefault();
 				update();
 			}
 		});
 		window.addEventListener('resize', fitSVG);
 		
+		d3renderer.bind('AST_area');
 		fitSVG();
 	</script>
 </body>
