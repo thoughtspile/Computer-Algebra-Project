@@ -12,7 +12,7 @@
 	<header>
 		<h1 id="logo">Парсим с Владимиром К.</h1><!--		
 	 --><menu id="control"><!--
-		 --><div id="expression" contenteditable="true">sin(3 / 2 * pi) + tan 3.1 - -var</div><!--
+		 --><div id="expression" contenteditable="true" spellcheck = "false">sin(3 / 2 * pi) + tan 3.1 - -var</div><!--
 		 --><button id="go">Go</button><!--
 	 --></menu>
 	</header>
@@ -25,9 +25,12 @@
 	<script>
 		var expr = document.getElementById('expression'),
 			update = function() {
-				var range = window.getSelection().getRangeAt(0),
-					offset = range.startOffset,
-					needsPreserve = range.startContainer.parentNode === expr;
+				var selection = window.getSelection(),
+					range = null;
+				if (selection.rangeCount !== 0 && selection.focusNode === expr) {
+					var range = selection.getRangeAt(0),
+						offset = range.startOffset;
+				}
 				unmarkError();
 				
 				try {
@@ -39,11 +42,13 @@
 					console.log(err.message);
 				}
 				
-				if (needsPreserve)
-					range.setStart(expr.childNodes[0], offset);
+				if (range)
+					range.setStart(expr.firstChild, offset);
 			},
 			markError = function(pos) {
 				var current = expr.innerHTML;
+				if (pos >= current.length)
+					pos = 0;
 				expr.innerHTML = current.substr(0, pos) + '<span id="error">' + current.substr(pos) + '</span>';
 			},
 			unmarkError = function() {
@@ -54,7 +59,7 @@
 				update();
 			};
 			
-		
+		console.log(document.getElementById('go'));
 		document.getElementById('go').addEventListener('click', update);
 		expr.addEventListener('keypress', function(e) {
 			if (e.keyCode === 13) {
@@ -66,6 +71,7 @@
 		
 		d3renderer.bind('AST_area');
 		fitSVG();
+		console.log('init ok');
 	</script>
 </body>
 
