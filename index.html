@@ -30,6 +30,10 @@
 			tree = d3.layout.tree(),
 			diagonal = d3.svg.diagonal.radial(),
 			update = function() {
+				var range = window.getSelection().getRangeAt(0),
+					offset = range.startOffset
+					needsPreserve = range.startContainer.parentNode === expr;
+					
 				expr.innerHTML = expr.innerHTML.replace(/<(.*?)>/g, '');
 				try {
 					var astroot = parser.parse(expr.innerHTML);
@@ -78,6 +82,9 @@
 					.text(function(d) {
 						return d._value;
 					});
+				
+				if (needsPreserve)
+					range.setStart(expr.childNodes[0], offset);
 			},
 			fitSVG = function() {
 				var astDims = window.getComputedStyle(output),
