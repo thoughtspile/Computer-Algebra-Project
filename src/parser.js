@@ -1,6 +1,10 @@
 var parser = (function() {
 	// utils
 	
+	Math.cot = function(x) {
+		return 1 / Math.tan(x);
+	};
+	
 	function isExisty(obj) {
 		return typeof(obj) !== 'undefined' && obj !== null;
 	};
