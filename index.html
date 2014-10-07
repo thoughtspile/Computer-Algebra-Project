@@ -16,6 +16,7 @@
 		 --><button id="go">Go</button><!--
 	 --></menu>
 	</header>
+	<div id='suggest'></div>
 	
 	<figure id="AST_area"></figure>
 	
@@ -25,7 +26,11 @@
 	<script src="src/gui.js"></script>
 	<script>
 		var expr = document.getElementById('expression'),
-			update = function() {
+			suggest = document.getElementById('suggest'),
+			go = document.getElementById('go'),
+			update = function() {	
+				d3renderer.resetElement(suggest);
+					
 				var selection = window.getSelection(),
 					range = null;
 				if (selection.rangeCount !== 0 && selection.focusNode === expr) {
@@ -61,18 +66,34 @@
 				update();
 			};
 			
-		document.getElementById('go').addEventListener('click', update);
+		go.addEventListener('click', update);
 		expr.addEventListener('keypress', function(e) {
 			if (e.keyCode === 13) {
 				e.preventDefault();
 				update();
 			}
 		});
+		expr.addEventListener('focus', function() {
+			d3renderer.align(expr, suggest);
+			logInterface.get(function(val) {
+				var newDiv = document.createElement('div');
+				newDiv.className = 'suggestEl';
+				newDiv.innerHTML = val;
+				newDiv.addEventListener('mousedown', function(e) {
+					expr.innerHTML = val;
+					update();
+				});
+				suggest.appendChild(newDiv);
+			});
+			suggest.style.visibility = 'visible';
+		});
+		expr.addEventListener('blur', function() {
+			d3renderer.resetElement(suggest);
+		});
 		window.addEventListener('resize', fitSVG);
 		
 		d3renderer.bind('AST_area');
 		fitSVG();
-		console.log('init ok');
 	</script>
 </body>
 

@@ -65,9 +65,24 @@ var d3renderer = (function() {
 		return d3renderer;
 	};
 	
+	function clearElement(element) {
+		while (element.firstChild)
+			element.removeChild(element.firstChild);
+		element.style.visibility = 'hidden';
+		return element;
+	}
+	
+	function asDropDown(from, what) {
+		var rect = from.getBoundingClientRect();
+		what.style.left = rect.left+'px';
+		what.style.top = rect.bottom+'px';
+	}
+	
 	return {
 		bind: bind,
 		resizeToFit: fitSVG,
-		draw: asD3
+		draw: asD3,
+		resetElement: clearElement,
+		align: asDropDown
 	};
 }());

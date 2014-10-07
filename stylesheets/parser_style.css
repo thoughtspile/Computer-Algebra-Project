@@ -51,6 +51,22 @@ header {
 	background: #e8e8dd;
 }
 
+#suggest {
+	padding: .15em 1% 0 1%;
+	text-overflow: ellipsis;
+	position: fixed;
+	background: #aaeeaa;
+	z-index: 10;
+}
+
+.suggestEl {
+	display: block;
+}
+
+.suggestEl:hover {
+	background: #99dd99;
+}
+
 #error {
 	color: #d33;
 }

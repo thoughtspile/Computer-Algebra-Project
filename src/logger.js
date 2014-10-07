@@ -15,30 +15,31 @@ var logInterface = (function() {
 		}
 	}
 		
+		
 	function push(data) {
-		console.log('logging', data);
 		httpRequest.onreadystatechange = logSuccess;
-		httpRequest.open('GET', url + '?mode=push&data=' + data, true);
+		httpRequest.open('GET', url + '?mode=push&data=' + data.replace(/\+/g, '%2B'), true);
 		httpRequest.send();
 	}
 	
-	function get() {
-		httpRequest.onreadystatechange = logResponse
+	function get(callback) {
+		httpRequest.onreadystatechange = function() {
+			if (success())
+				JSON.parse(httpRequest.responseText).forEach(callback);
+		};
 		httpRequest.open('GET', url + '?mode=get', true);
 		httpRequest.send();
 	}
+	
 	
 	function success() {
 		return httpRequest.readyState === 4 && httpRequest.status === 200;
 	}
 	
-	function logResponse() {
-		if (success()) console.log(httpRequest.responseText);
-	}
-	
 	function logSuccess() {
 		if (success()) console.log('push ok');
 	}
+	
 	
 	return {
 		push: push,
