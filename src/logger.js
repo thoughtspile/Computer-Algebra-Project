@@ -28,14 +28,16 @@ var logInterface = (function() {
 		httpRequest.send();
 	}
 	
+	function success() {
+		return httpRequest.readyState === 4 && httpRequest.status === 200;
+	}
+	
 	function logResponse() {
-		if (httpRequest.readyState === 4 && httpRequest.status === 200)
-			console.log(httpRequest.responseText);
+		if (success()) console.log(httpRequest.responseText);
 	}
 	
 	function logSuccess() {
-		if (httpRequest.readyState === 4 && httpRequest.status === 200)
-			console.log('push ok');
+		if (success()) console.log('push ok');
 	}
 	
 	return {
