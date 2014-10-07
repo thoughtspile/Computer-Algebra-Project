@@ -21,6 +21,7 @@
 	
 	<script src="libs/d3.min.js"></script>
 	<script src="src/parser.js"></script>
+	<script src="src/logger.js"></script>
 	<script src="src/gui.js"></script>
 	<script>
 		var expr = document.getElementById('expression'),
@@ -33,6 +34,7 @@
 				}
 				unmarkError();
 				
+				logInterface.push(expr.innerHTML);
 				try {
 					var astroot = parser.parse(expr.innerHTML);
 					astroot.value();
@@ -59,7 +61,6 @@
 				update();
 			};
 			
-		console.log(document.getElementById('go'));
 		document.getElementById('go').addEventListener('click', update);
 		expr.addEventListener('keypress', function(e) {
 			if (e.keyCode === 13) {
