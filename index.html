@@ -19,6 +19,8 @@
 	
 	<figure id="AST_area"></figure>
 	
+
+	<script src='http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
 	<script src="libs/d3.min.js"></script>
 	<script src="src/parser.js"></script>
 	<script src="src/logger.js"></script>
@@ -38,6 +40,7 @@
 				try {
 					var astroot = parser.parse(expr.innerHTML);
 					astroot.value();
+					console.log(astroot.texify(true));
 					d3renderer.draw(astroot);
 				} catch (err) {
 					markError(err.position);
