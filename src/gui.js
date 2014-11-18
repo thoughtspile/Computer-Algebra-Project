@@ -61,6 +61,7 @@ var d3renderer = (function() {
 			.text(function(d) {
 				return d._value;
 			});
+		console.log(svg);
 			
 		return d3renderer;
 	};

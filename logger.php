@@ -10,16 +10,17 @@
 		$mode = $_GET['mode'];
 		
 		if ($mode == 'push' && array_key_exists('data', $_GET)) {
-			$history = json_decode($strData);
-			$data = $_GET['data'];
-			if (!in_array($data, $history))
-				array_push($history, $data);
-			array_push($history, $_GET['data']);
+			$history = json_decode($strData, true);
+			$plain = $_GET['data'];
+			$tex = $_GET['tex'];
+			print_r($history);
+			echo $plain, ' ', $tex;
+			$history[$plain] = array("plain" => $plain, "tex" => $tex);
 			file_put_contents($logpath, json_encode($history));
 		} else if ($mode == 'get') {
-			echo $strData;
+			echo json_encode(array_keys(json_decode($strData, true)));
 		} else if ($mode == 'reset') {
-			file_put_contents($logpath, '[]');			
+			file_put_contents($logpath, '{}');		
 		}
 	}
 ?> 
