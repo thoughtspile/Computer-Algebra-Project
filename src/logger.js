@@ -36,14 +36,12 @@ var logInterface = (function() {
 		return httpRequest.readyState === 4 && httpRequest.status === 200;
 	}
 	
-<<<<<<< HEAD
-=======
+
 	function logResponse() {
 		if (success()) 
 			console.log(httpRequest.responseText);
 	}
 	
->>>>>>> origin/master
 	function logSuccess() {
 		if (success()) 
 			console.log('push ok');
