@@ -1,6 +1,6 @@
 var logInterface = (function() {
 	var httpRequest,
-		url = 'http://borschach.ru/compalgebra_stuff/logger.php';
+		url = 'http://evariste.borschach.ru/logger.php';
 
 	if (window.XMLHttpRequest) { // Mozilla, Safari, ...
 		httpRequest = new XMLHttpRequest();
@@ -33,11 +33,13 @@ var logInterface = (function() {
 	}
 	
 	function logResponse() {
-		if (success()) console.log(httpRequest.responseText);
+		if (success()) 
+			console.log(httpRequest.responseText);
 	}
 	
 	function logSuccess() {
-		if (success()) console.log('push ok');
+		if (success()) 
+			console.log('push ok');
 	}
 	
 	return {

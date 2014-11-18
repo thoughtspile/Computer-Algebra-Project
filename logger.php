@@ -11,7 +11,7 @@
 		
 		if ($mode == 'push' && array_key_exists('data', $_GET)) {
 			$history = json_decode($strData);
-			array_push($history, $_GET['data']);
+			array_push($history, '{' + $_GET['data'] + ',' + $_GET('tex') + '}');
 			file_put_contents($logpath, json_encode($history));
 		} else if ($mode == 'get') {
 			echo $strData;
