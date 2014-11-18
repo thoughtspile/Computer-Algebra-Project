@@ -3,7 +3,6 @@
 	padding: 0;
 	border: none;
 	border-radius: 0;
-	font-family: 'Helvetica', sans-serif;
 }
 
 header {
@@ -11,6 +10,7 @@ header {
 	height: 20%;
 	background: #333;
 	padding: 1.5% 5% 0 5%;
+	font-family: 'Helvetica', sans-serif;
 }
 
 #logo {
@@ -38,6 +38,7 @@ header {
 	display: inline-block;
 	vertical-align: top;
 	font-size: 15pt;
+	font-family: 'Helvetica', sans-serif;
 }
 
 #expression {

@@ -11,9 +11,13 @@
 		
 		if ($mode == 'push' && array_key_exists('data', $_GET)) {
 			$history = json_decode($strData);
+<<<<<<< HEAD
 			$data = $_GET['data'];
 			if (!in_array($data, $history))
 				array_push($history, $data);
+=======
+			array_push($history, '{' + $_GET['data'] + ',' + $_GET('tex') + '}');
+>>>>>>> origin/master
 			file_put_contents($logpath, json_encode($history));
 		} else if ($mode == 'get') {
 			echo $strData;

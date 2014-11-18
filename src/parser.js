@@ -17,19 +17,26 @@ var parser = (function() {
 	ParseError.prototype = new Error();
 	ParseError.prototype.constructor = ParseError;
 	
+	
 	// parser
 	
 	var terminalRegex = /^[a-z0-9_$]+$/;
 	
 	function Parser() {
 		this.table = {};
+		this.factory = null;
 	}
+	
+	Parser.prototype.bindASTfactory = function(ASTfactory) {
+		this.factory = ASTfactory;
+		return this;
+	};
 	
 	Parser.prototype.isTerminal = function(token) {
 		return !this.table.hasOwnProperty(token);
 	};
 			
-	Parser.prototype.addRule = function(left, right, node) {
+	Parser.prototype.addRule = function(left, right, nodeClassId) {
 		var tail = right.slice(),
 			prefix = null;
 			
@@ -37,7 +44,7 @@ var parser = (function() {
 			prefix = tail.shift();
 		
 		this.table[left] = this.table[left] || {};
-		this.table[left][prefix] = {add: tail, node: node};
+		this.table[left][prefix] = {add: tail, node: this.factory.classes[nodeClassId]};
 		
 		return this;
 	};
@@ -115,32 +122,58 @@ var parser = (function() {
 	};
 
 	
-	function AST() {
+	// AST
+	
+	function ASTfactory() {
 		this.classes = {};
 	}
 	
-	AST.prototype.addNodeClass = function(id, op) {
-		var nodeConstructor = ASTnode.bind(null, op);
-		this.classes[id] = nodeConstructor;
+	ASTfactory.prototype.addNodeClass = function(id, feval, texify) {
+		var nodeClass = function(selfValue) {
+			AST.call(this, selfValue);
+			this.type = id;
+		}
+		
+		nodeClass.prototype = new AST();
+		nodeClass.prototype.value = function() {
+			this._value = this._value || feval(this.selfValue, this.children.map(function(child) {
+				return child.value();
+			}));
+			return this._value;
+		};
+		nodeClass.prototype.texify = function(wrap) {
+			if (!isExisty(this._tex)) {
+				this._tex = texify(this.selfValue, this.children.map(function(child) {
+					return child.texify(false);
+				}), this.children.map(function(child) {
+					return child.type;
+				}));
+				if (wrap === true)
+					this._tex = '\\(' + this._tex + '\\)';
+			}
+			return this._tex;
+		};
+		
+		this.classes[id] = nodeClass;
+		
 		return this;
 	};
 	
-	function ASTnode(op, selfValue) {
-		this.op = op;
-		this.children = [];
-		this.selfValue = selfValue;
-		this._value = null;
+	ASTfactory.prototype.create = function(id) {
+		return new this.classes[id]();
 	};
 	
-	ASTnode.prototype.value = function() {
-		this._value = this._value || this.op(this.selfValue, this.children.map(function(node) {
-			return node.value();
-		}));
-		return this._value;
+	function AST(selfValue) {
+		this.selfValue = selfValue;
+		this.children = [];
+		
+		this._value = null;
+		this._tex = null;
 	};
 		
 		
 	// tokenizer
+	
 	function Tokenizer() {
 		this.patterns = {};
 		this.tokenClasses = [];
@@ -202,57 +235,88 @@ var parser = (function() {
 			.addPattern('lparen', /^\(/)
 			.addPattern('rparen', /^\)/)
 			.addPattern('space', /^\s+/, {ignore: true}),
-		trigTree = new AST()
-			.addNodeClass('number', function(self) {
-				return parseFloat(self);
+		trigASTmaker = new ASTfactory()
+			.addNodeClass('number', function(self, children) {
+					return parseFloat(self);
+				}, function(self, children, ctypes) {
+					return self;
 			})
-			.addNodeClass('variable', function(self) {
-				return self;
+			.addNodeClass('variable', function(self, children) {
+					return self;
+				}, function(self, children, ctypes) {
+					return self;
 			})
 			.addNodeClass('call', function(self, children) {
-				return Math[self.toLowerCase()](children[0]);
+					return Math[self.toLowerCase()](children[0]);
+				}, function(self, children, ctypes) {
+					return '\\' + self.toLowerCase() + '(' + children[0] + ')';
 			})
 			.addNodeClass('sum', function(self, children) {
-				if (self === '+')
-					return children[0] + children[1];
-				else
-					return children[0] - children[1];
+					if (self === '+')
+						return children[0] + children[1];
+					else
+						return children[0] - children[1];
+				}, function(self, children, ctypes) {
+					return children[0]  + self + children[1];
 			})
 			.addNodeClass('times', function(self, children) {
-				if (self === '*')
-					return children[0] * children[1];
-				else 
-					return children[0] / children[1];
+					if (self === '*')
+						return children[0] * children[1];
+					else 
+						return children[0] / children[1];
+				}, function(self, children, ctypes) {
+					if (self === '*') {
+						if (ctypes[0] === 'sum')
+							children[0] = '\\left(' + children[0] + '\\right)';
+						if (ctypes[1] === 'sum')
+							children[1] = '\\left(' + children[1] + '\\right)';
+						return children[0] + children[1];
+					} else {
+						return '\\frac{' + children[0] + '}{' + children[1] + '}';
+					}
 			})
 			.addNodeClass('unary', function(self, children) {
-				if (self === '+')
-					return children[0];
-				else
-					return -children[0];
+					if (self === '+')
+						return children[0];
+					else
+						return -children[0];
+				}, function(self, children, ctypes) {
+					var body = ctypes[0] === 'sum'? 
+						'\\left(' + children[0] + '\\right)': 
+						children[0]; 
+					if (self === '+')
+						return body;
+					else
+						return '-' + body;
 			})
 			.addNodeClass('pow', function(self, children) {
-				return Math.pow(children[0], children[1]);
+					return Math.pow(children[0], children[1]);
+				}, function(self, children, ctypes) {
+					return '(' + children[0] + ')' + selfValue + '(' + children[1] + ')';
 			})
-			.addNodeClass('constant', function(self) {
-				return Math[self.toUpperCase()];
+			.addNodeClass('constant', function(self, children) {
+					return Math[self.toUpperCase()];
+				}, function(self, children, ctypes) {
+					return '\\' + self.toLowerCase();
 			}),
 		trigParser = new Parser()
+			.bindASTfactory(trigASTmaker)
 			.addRule('EXPR', ['TERM', 'EXPR_TAIL'])  
-			.addRule('EXPR_TAIL', ['plusminus', 'TERM', 'EXPR_TAIL'], trigTree.classes.sum)
+			.addRule('EXPR_TAIL', ['plusminus', 'TERM', 'EXPR_TAIL'], 'sum')
 			.addRule('EXPR_TAIL', [])  
-			.addRule('TERM', ['plusminus', 'TERM'], trigTree.classes.unary)
+			.addRule('TERM', ['plusminus', 'TERM'], 'unary')
 			.addRule('TERM', ['FACTOR', 'TERM_TAIL'])
-			.addRule('TERM_TAIL', ['multdiv', 'FACTOR', 'TERM_TAIL'], trigTree.classes.times)
+			.addRule('TERM_TAIL', ['multdiv', 'FACTOR', 'TERM_TAIL'], 'times')
 			.addRule('TERM_TAIL', [])
-			.addRule('FACTOR', ['plusminus', 'FACTOR'], trigTree.classes.unary)
+			.addRule('FACTOR', ['plusminus', 'FACTOR'], 'unary')
 			.addRule('FACTOR', ['ARG', 'FACTOR_TAIL'])
-			.addRule('FACTOR_TAIL', ['exp', 'ARG', 'FACTOR_TAIL'], trigTree.classes.pow)
+			.addRule('FACTOR_TAIL', ['exp', 'ARG', 'FACTOR_TAIL'], 'pow')
 			.addRule('FACTOR_TAIL', [])
-			.addRule('ARG', ['constant'], trigTree.classes.constant)
-			.addRule('ARG', ['plusminus', 'ARG'], trigTree.classes.unary)
-			.addRule('ARG', ['variable'], trigTree.classes.variable)
-			.addRule('ARG', ['number'], trigTree.classes.number)
-			.addRule('ARG', ['func', 'ARG'], trigTree.classes.call)
+			.addRule('ARG', ['constant'], 'constant')
+			.addRule('ARG', ['plusminus', 'ARG'], 'unary')
+			.addRule('ARG', ['variable'], 'variable')
+			.addRule('ARG', ['number'], 'number')
+			.addRule('ARG', ['func', 'ARG'], 'call')
 			.addRule('ARG', ['lparen', 'EXPR', 'rparen']),
 		parse = function(str) {
 			return trigParser.run(trigTokenizer.run(str));
