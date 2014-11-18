@@ -5,7 +5,7 @@
 		header('Access-Control-Max-Age: 3628800');
 		header('Access-Control-Allow-Methods: GET');
 		
-		$logpath = 'log.json';	
+		$logpath = 'history/log.json';	
 		$strData = file_get_contents($logpath);
 		$mode = $_GET['mode'];
 		
@@ -14,7 +14,7 @@
 			$data = $_GET['data'];
 			if (!in_array($data, $history))
 				array_push($history, $data);
-			array_push($history, '{' + $_GET['data'] + ',' + $_GET('tex') + '}');
+			array_push($history, $_GET['data']);
 			file_put_contents($logpath, json_encode($history));
 		} else if ($mode == 'get') {
 			echo $strData;

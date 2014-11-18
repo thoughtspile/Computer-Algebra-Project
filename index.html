@@ -41,12 +41,12 @@
 				}
 				unmarkError();
 				
-				logInterface.push(expr.innerHTML);
 				try {
 					var astroot = parser.parse(expr.innerHTML);
 					astroot.value();
-					console.log(astroot.texify(true));
+					//console.log(astroot.texify(true));
 					d3renderer.draw(astroot);
+					logInterface.push(expr.innerHTML, astroot.texify(true));
 				} catch (err) {
 					markError(err.position);
 					console.log(err.message);
