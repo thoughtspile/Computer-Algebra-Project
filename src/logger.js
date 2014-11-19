@@ -18,7 +18,7 @@ var logInterface = (function() {
 		
 	function push(data, tex) {
 		httpRequest.onreadystatechange = logSuccess;
-		httpRequest.open('GET', url + '?mode=push&data=' + data.replace(/\+/g, '%2B') + '&tex=' + tex.replace(/\+/g, '%2B'), true);
+		httpRequest.open('GET', url + '?mode=push&data=' + encodeURI(data) + '&tex=' + encodeURI(tex), true);
 		httpRequest.send();
 	}
 	
