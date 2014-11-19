@@ -152,7 +152,7 @@ var parser = (function() {
 			return this._tex;
 		};
 		nodeClass.prototype.tikzify = function(indent) {
-			indent = indent || '  ';
+			if (!isExisty(indent)) indent = '';
 			if (!isExisty(this._tikz)) {
 				this._tikz = indent + 'node{' + this.selfValue + '}\n' + 
 					this.children.map(function(child) {
