@@ -23,7 +23,18 @@
 			file_put_contents($logpath, '{}');		
 		} else if ($mode == 'gettex') {
 			function extractTex($n) { return($n['tex']); }
-			print(join('\n\n', array_map('extractTex', json_decode($strData, true))));
+			function wrapTex($b) { return("\\documentclass[12pt]{article}
+\\usepackage{amssymb}
+\\usepackage{mathtext}
+\\usepackage{amsmath}
+\\usepackage{cmap}
+\\usepackage{tikz}
+\\usetikzlibrary{trees,positioning,arrows}
+\\begin{document}
+\\centering{\n" . $b . "\n}\n\\end{document}");
+			}
+			header('application/x-tex');
+			print(wrapTex(join("\n\n", array_map('extractTex', json_decode($strData, true)))));
 		}
 	}
 ?> 

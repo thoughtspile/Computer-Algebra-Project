@@ -154,7 +154,7 @@ var parser = (function() {
 		nodeClass.prototype.tikzify = function(indent) {
 			if (!isExisty(indent)) indent = '';
 			if (!isExisty(this._tikz)) {
-				this._tikz = indent + 'node{' + this.selfValue + '\n' + indent + '}\n' + 
+				this._tikz = indent + 'node{' + this.selfValue + '}\n' + 
 					this.children.map(function(child) {
 						return indent + '  child{\n' + child.tikzify(indent + '  ') + '\n' + indent + '  }';
 					}).join('\n');
@@ -331,8 +331,10 @@ var parser = (function() {
 			return trigParser.run(trigTokenizer.run(str));
 		},
 		assembleTexModule = function(tex, tikz) {
-			return '$$'+ tex + '$$\n' +
-				'\\begin{tikzpicture}\n\\' + tikz + ';\n\\end{tikzpicture}';
+			return '\\begin{figure}\n' +
+				'\\centering{\\begin{tikzpicture}\n\\' + tikz + ';\n\\end{tikzpicture}}\n' + 
+				'$$'+ tex + '$$\n' +
+				'\\end{figure}\n';
 		};
 	
 	
