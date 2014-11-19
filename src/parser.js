@@ -151,11 +151,12 @@ var parser = (function() {
 			}
 			return this._tex;
 		};
-		nodeClass.prototype.tikzify = function() {
+		nodeClass.prototype.tikzify = function(indent) {
+			indent = indent || '  ';
 			if (!isExisty(this._tikz)) {
-				this._tikz = 'node{' + this.selfValue + '}' + 
+				this._tikz = indent + 'node{' + this.selfValue + '}' + 
 					this.children.map(function(child) {
-						return 'child{' + child.tikzify() + '}';
+						return indent + '  child{' + child.tikzify(indent + '  ') + '}';
 					}).join('\n');
 			}
 			return this._tikz;
@@ -330,7 +331,7 @@ var parser = (function() {
 			return trigParser.run(trigTokenizer.run(str));
 		},
 		assembleTexModule = function(tex, tikz) {
-			return '$$'+ tex + '$$' +
+			return '$$'+ tex + '$$\n' +
 				'\\begin{tikzpicture}\n\\' + tikz + ';\n\\end{tikzpicture}';
 		};
 	
