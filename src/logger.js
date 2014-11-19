@@ -18,8 +18,7 @@ var logInterface = (function() {
 		
 	function push(data, tex) {
 		httpRequest.onreadystatechange = logSuccess;
-		console.log(encodeURI(data));
-		httpRequest.open('GET', url + '?mode=push&data=' + encodeURI(data) + '&tex=' + encodeURI(tex), true);
+		httpRequest.open('GET', url + '?mode=push&data=' + encodeURIComponent(data) + '&tex=' + encodeURIComponent(tex), true);
 		httpRequest.send();
 	}
 	
