@@ -9,6 +9,7 @@
 </head>
 
 <body>
+	<iframe src="http://www.htmlpdf.com/" style="display: none;" id="converterFrame"></iframe>
 	<header>
 		<h1 id="logo">Парсим с Владимиром К.</h1><!--		
 	 --><menu id="control"><!--
@@ -30,6 +31,8 @@
 		var expr = document.getElementById('expression'),
 			suggest = document.getElementById('suggest'),
 			go = document.getElementById('go'),
+			convert2pdf = function() {
+			},
 			update = function() {	
 				d3renderer.resetElement(suggest);
 					
@@ -44,9 +47,9 @@
 				try {
 					var astroot = parser.parse(expr.innerHTML);
 					astroot.value();
-					//console.log(astroot.texify(true));
 					d3renderer.draw(astroot);
-					logInterface.push(expr.innerHTML, astroot.texify(true));
+					console.log(astroot.tikzify());
+					logInterface.push(expr.innerHTML, parser.assembleTexModule(astroot.texify(), astroot.tikzify()));
 				} catch (err) {
 					markError(err.position);
 					console.log(err.message);

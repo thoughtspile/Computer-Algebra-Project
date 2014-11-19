@@ -141,17 +141,24 @@ var parser = (function() {
 			}));
 			return this._value;
 		};
-		nodeClass.prototype.texify = function(wrap) {
+		nodeClass.prototype.texify = function() {
 			if (!isExisty(this._tex)) {
 				this._tex = texify(this.selfValue, this.children.map(function(child) {
 					return child.texify(false);
 				}), this.children.map(function(child) {
 					return child.type;
 				}));
-				if (wrap === true)
-					this._tex = '\\(' + this._tex + '\\)';
 			}
 			return this._tex;
+		};
+		nodeClass.prototype.tikzify = function() {
+			if (!isExisty(this._tikz)) {
+				this._tikz = 'node{' + this.selfValue + '}' + 
+					this.children.map(function(child) {
+						return 'child{' + child.tikzify() + '}';
+					}).join('\n');
+			}
+			return this._tikz;
 		};
 		
 		this.classes[id] = nodeClass;
@@ -169,6 +176,7 @@ var parser = (function() {
 		
 		this._value = null;
 		this._tex = null;
+		this._tikz = null;
 	};
 		
 		
@@ -320,11 +328,17 @@ var parser = (function() {
 			.addRule('ARG', ['lparen', 'EXPR', 'rparen']),
 		parse = function(str) {
 			return trigParser.run(trigTokenizer.run(str));
+		},
+		assembleTexModule = function(tex, tikz) {
+			return '$$'+ tex + '$$' +
+				'\\begin{tikzpicture}\n\\' + tikz + ';\n\\end{tikzpicture}';
 		};
+	
 	
 	// export
 
 	return {
-		parse: parse
+		parse: parse,
+		assembleTexModule: assembleTexModule
 	}
 }());

@@ -34,6 +34,9 @@ var d3renderer = (function() {
 			.enter().append('path')
 			.attr('class', 'link')
 			.attr('d', diagonal);
+		link.style("fill", "none");
+		link.style("stroke", "#ccc");
+		link.style("stroke-width", "1px");
 
 		var node = svg.selectAll(".node")
 			.data(astnodes)
@@ -42,6 +45,8 @@ var d3renderer = (function() {
 			.attr("transform", function(d) {
 				return "translate(" + d.x + "," + d.y + ")";
 			});
+		node.style("fill", "#333");
+		link.style("font-size",  "15pt");
 
 		node.append("circle")
 			.attr("r", 2);
@@ -61,7 +66,13 @@ var d3renderer = (function() {
 			.text(function(d) {
 				return d._value;
 			});
-		console.log(svg);
+			
+		//image/svg+xml
+		//var temp = document.createElement("div");
+		//temp.appendChild(svg[0][0]);
+		//<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+		//window.open('data:text/html,' + encodeURI(temp.innerHTML));
+		//svg[0].parentNode.appendChild(temp.firstChild);
 			
 		return d3renderer;
 	};
