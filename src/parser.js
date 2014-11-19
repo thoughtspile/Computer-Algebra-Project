@@ -332,7 +332,7 @@ var parser = (function() {
 		},
 		assembleTexModule = function(tex, tikz) {
 			return '\\begin{figure}\n' +
-				'\\centering{\n\\begin{tikzpicture}\n\\' + tikz + ';\n\\end{tikzpicture}}\n' + 
+				'\\centering{\\begin{tikzpicture}\n\\' + tikz + ';\n\\end{tikzpicture}}\n' + 
 				'$$'+ tex + '$$\n' +
 				'\\end{figure}\n';
 		};
