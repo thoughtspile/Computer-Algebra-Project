@@ -154,9 +154,9 @@ var parser = (function() {
 		nodeClass.prototype.tikzify = function(indent) {
 			if (!isExisty(indent)) indent = '';
 			if (!isExisty(this._tikz)) {
-				this._tikz = indent + 'node{' + this.selfValue + '}\n' + 
+				this._tikz = indent + 'node{' + this.selfValue + '\n' + indent + '}\n' + 
 					this.children.map(function(child) {
-						return indent + '  child{' + child.tikzify(indent + '  ') + indent + '  }';
+						return indent + '  child{\n' + child.tikzify(indent + '  ') + '\n' + indent + '  }';
 					}).join('\n');
 			}
 			return this._tikz;
