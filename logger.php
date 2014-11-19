@@ -23,7 +23,7 @@
 			file_put_contents($logpath, '{}');		
 		} else if ($mode == 'gettex') {
 			function extractTex($n) { return($n['tex']); }
-			print(join('\n', array_map('extractTex', json_decode($strData, true))));
+			print(join('\n\n', array_map('extractTex', json_decode($strData, true))));
 		}
 	}
 ?> 
