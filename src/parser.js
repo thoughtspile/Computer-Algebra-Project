@@ -154,7 +154,7 @@ var parser = (function() {
 		nodeClass.prototype.tikzify = function(indent) {
 			if (!isExisty(indent)) indent = '';
 			if (!isExisty(this._tikz)) {
-				this._tikz = indent + 'node{' + this.selfValue + '}' + 
+				this._tikz = indent + 'node{' + this.selfValue + '}\n' +
 					this.children.map(function(child) {
 						return indent + '  child{\n' + child.tikzify(indent + '    ') + indent + '  }';
 					}).join('\n');
