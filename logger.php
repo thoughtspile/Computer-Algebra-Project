@@ -11,8 +11,8 @@
 		
 		if ($mode == 'push' && array_key_exists('data', $_GET)) {
 			$history = json_decode($strData, true);
-			$plain = urldecode($_GET['data']);
-			$tex = urldecode($_GET['tex']);
+			$plain = rawurldecode($_GET['data']);
+			$tex = rawurldecode($_GET['tex']);
 			print_r($history);
 			echo $plain, ' ', $tex;
 			$history[$plain] = array("plain" => $plain, "tex" => $tex);
