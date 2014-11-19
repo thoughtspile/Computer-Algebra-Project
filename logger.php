@@ -30,7 +30,7 @@
 \\usepackage{cmap}
 \\usepackage{tikz}
 \\usetikzlibrary{trees,positioning,arrows}
-\\begin{document}\n\n" . $b . "\n}\n\\end{document}");
+\\begin{document}\n\n\n" . $b . "\n\n\\end{document}");
 			}
 			header('application/x-tex');
 			print(wrapTex(join("\n\n", array_map('extractTex', json_decode($strData, true)))));
