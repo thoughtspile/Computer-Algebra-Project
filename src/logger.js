@@ -22,6 +22,15 @@ var logInterface = (function() {
 		httpRequest.send();
 	}
 	
+	function requestTex() {
+		httpRequest.onreadystatechange = openTex;
+		httpRequest.open('GET', url + '?mode=gettex', true);
+	}
+	
+	function openTex() {
+		window.open('http://evariste.borschach.ru/history.tex');
+	}
+	
 	function get(callback) {
 		httpRequest.onreadystatechange = function() {
 			if (success())
@@ -49,6 +58,7 @@ var logInterface = (function() {
 	
 	
 	return {
+		requestTex: requestTex,
 		push: push,
 		get: get
 	};

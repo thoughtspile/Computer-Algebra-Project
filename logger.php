@@ -5,7 +5,7 @@
 		header('Access-Control-Max-Age: 3628800');
 		header('Access-Control-Allow-Methods: GET');
 		
-		$logpath = 'history/log.json';	
+		$logpath = 'history/log.json';
 		$strData = file_get_contents($logpath);
 		$mode = $_GET['mode'];
 		
@@ -25,15 +25,15 @@
 			function extractTex($n) { return($n['tex']); }
 			function wrapTex($b) { return("\\documentclass[12pt]{article}
 \\usepackage{amssymb}
-\\usepackage{mathtext}
 \\usepackage{amsmath}
 \\usepackage{cmap}
 \\usepackage{tikz}
 \\usetikzlibrary{trees,positioning,arrows}
 \\begin{document}\n\n\n" . $b . "\n\n\\end{document}");
 			}
-			header('application/x-tex');
-			print(wrapTex(join("\n\n", array_map('extractTex', json_decode($strData, true)))));
+			file_put_contents('history/query_log.tex', wrapTex(join("\n\n", array_map('extractTex', json_decode($strData, true)))));
+			header("Location: http://evariste.borschach.ru/history/query_log.tex");
+			die();
 		}
 	}
 ?> 

@@ -17,7 +17,7 @@
 		 --><button id="go">Go</button><!--
 	 --></menu>
 	</header>
-	<div id='suggest'></div>
+	<div id='suggest'><span id="texButton">А еще её можно получить в ТеХе!</span></div>
 	
 	<figure id="AST_area"></figure>
 	
@@ -31,8 +31,6 @@
 		var expr = document.getElementById('expression'),
 			suggest = document.getElementById('suggest'),
 			go = document.getElementById('go'),
-			convert2pdf = function() {
-			},
 			update = function() {	
 				d3renderer.resetElement(suggest);
 					
@@ -72,6 +70,7 @@
 				update();
 			};
 			
+		document.getElementById('go').addEventListener('click', logInterface.requestTex);
 		go.addEventListener('click', update);
 		expr.addEventListener('keypress', function(e) {
 			if (e.keyCode === 13) {
