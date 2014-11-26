@@ -22,14 +22,23 @@ var logInterface = (function() {
 		httpRequest.send();
 	}
 	
+	
 	function requestTex() {
-		httpRequest.onreadystatechange = openTex;
+		window.open(url + '?mode=gettex', true);
+	}
+	
+	
+	function requestPdf() {
+		httpRequest.onreadystatechange = function() {
+			window.setTimeout(processPdf, 700);
+		};
 		httpRequest.open('GET', url + '?mode=gettex', true);
 	}
 	
-	function openTex() {
-		window.open('http://evariste.borschach.ru/history.tex');
+	function processPdf() {
+		window.open('http://178.62.13.231/GiveMePDF.php?from="http://evariste.borschach.ru/history/query_log.tex"&name=query_log');
 	}
+	
 	
 	function get(callback) {
 		httpRequest.onreadystatechange = function() {
@@ -47,18 +56,19 @@ var logInterface = (function() {
 	
 
 	function logResponse() {
-		if (success()) 
-			console.log(httpRequest.responseText);
+		//if (success()) 
+		//	console.log(httpRequest.responseText);
 	}
 	
 	function logSuccess() {
-		if (success()) 
-			console.log('push ok');
+		//if (success()) 
+		//	console.log('push ok');
 	}
 	
 	
 	return {
 		requestTex: requestTex,
+		requestPdf: requestPdf,
 		push: push,
 		get: get
 	};

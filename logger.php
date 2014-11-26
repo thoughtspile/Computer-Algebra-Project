@@ -24,9 +24,6 @@
 		} else if ($mode == 'gettex') {
 			function extractTex($n) { return($n['tex']); }
 			function wrapTex($b) { return("\\documentclass[12pt]{article}
-\\usepackage{amssymb}
-\\usepackage{amsmath}
-\\usepackage{cmap}
 \\usepackage{tikz}
 \\usetikzlibrary{trees,positioning,arrows}
 \\begin{document}\n\n\n" . $b . "\n\n\\end{document}");

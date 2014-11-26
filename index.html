@@ -15,9 +15,13 @@
 	 --><menu id="control"><!--
 		 --><div id="expression" contenteditable="true" spellcheck = "false">sin(3 / 2 * pi) + tan cot 3.1 - -cos var</div><!--
 		 --><button id="go">Go</button><!--
+		 --><button id="texButton">ТеХ</button><!--
+		 --><button id="pdfButton">PDF</button><!--
 	 --></menu>
 	</header>
-	<div id='suggest'><span id="texButton">А еще её можно получить в ТеХе!</span></div>
+	<div id='suggest'>
+		<div id="optionList"></div>
+	</div>
 	
 	<figure id="AST_area"></figure>
 	
@@ -30,9 +34,10 @@
 	<script>
 		var expr = document.getElementById('expression'),
 			suggest = document.getElementById('suggest'),
+			dynaList = document.getElementById('optionList'),
 			go = document.getElementById('go'),
 			update = function() {	
-				d3renderer.resetElement(suggest);
+				d3renderer.resetElement(suggest, dynaList);
 					
 				var selection = window.getSelection(),
 					range = null;
@@ -46,7 +51,7 @@
 					var astroot = parser.parse(expr.innerHTML);
 					astroot.value();
 					d3renderer.draw(astroot);
-					console.log(astroot.tikzify());
+					//console.log(astroot.tikzify());
 					logInterface.push(expr.innerHTML, parser.assembleTexModule(astroot.texify(), astroot.tikzify()));
 				} catch (err) {
 					markError(err.position);
@@ -70,7 +75,6 @@
 				update();
 			};
 			
-		document.getElementById('go').addEventListener('click', logInterface.requestTex);
 		go.addEventListener('click', update);
 		expr.addEventListener('keypress', function(e) {
 			if (e.keyCode === 13) {
@@ -88,14 +92,17 @@
 					expr.innerHTML = val;
 					update();
 				});
-				suggest.appendChild(newDiv);
+				dynaList.appendChild(newDiv);
 			});
 			suggest.style.visibility = 'visible';
 		});
 		expr.addEventListener('blur', function() {
-			d3renderer.resetElement(suggest);
+			d3renderer.resetElement(suggest, dynaList);
 		});
 		window.addEventListener('resize', fitSVG);
+		
+		document.getElementById('texButton').addEventListener('click', logInterface.requestTex);
+		document.getElementById('pdfButton').addEventListener('click', logInterface.requestPdf);
 		
 		d3renderer.bind('AST_area');
 		fitSVG();

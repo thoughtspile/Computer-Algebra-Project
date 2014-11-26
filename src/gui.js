@@ -77,9 +77,9 @@ var d3renderer = (function() {
 		return d3renderer;
 	};
 	
-	function clearElement(element) {
-		while (element.firstChild)
-			element.removeChild(element.firstChild);
+	function clearElement(element, opts) {
+		while (opts.firstChild)
+			opts.removeChild(opts.firstChild);
 		element.style.visibility = 'hidden';
 		return element;
 	}

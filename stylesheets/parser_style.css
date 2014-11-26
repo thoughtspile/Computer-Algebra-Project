@@ -34,7 +34,7 @@ header {
 	padding-bottom: .4em;
 }
 
-#expression, button#go {
+#expression, button#go, #texButton, #pdfButton {
 	display: inline-block;
 	vertical-align: top;
 	font-size: 15pt;
@@ -45,12 +45,31 @@ header {
 	white-space: nowrap;
 	height: 1.35em;
 	min-width: 4em;
-	width: 88%;
+	width: 74%;
 	padding: .15em 1% 0 1%;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	background: #e8e8dd;
 }
+
+#error {
+	color: #d33;
+}
+
+button#go, #texButton, #pdfButton {
+	height: 1.5em;
+	min-width: 2em;
+	width: 8%;
+	background: #ddd;
+	color: #3d3d3d;
+	font-weight: bold;
+}
+
+button#go:hover, #texButton:hover, #pdfButton:hover {
+	background: #f80;
+	color: #201511;
+}
+
 
 #suggest {
 	padding: .15em 1% 0 1%;
@@ -60,30 +79,13 @@ header {
 	z-index: 10;
 }
 
+
 .suggestEl {
 	display: block;
 }
 
 .suggestEl:hover {
 	background: #99dd99;
-}
-
-#error {
-	color: #d33;
-}
-
-button#go {
-	height: 1.5em;
-	min-width: 2em;
-	width: 10%;
-	background: #ddd;
-	color: #3d3d3d;
-	font-weight: bold;
-}
-
-button#go:hover {
-	background: #f80;
-	color: #201511;
 }
 
 
