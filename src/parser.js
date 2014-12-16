@@ -132,24 +132,5 @@
 	};
 
 	
-	// Traverser
-	
-	function Traverser(id, callback) {
-		this.id = id;
-		this.func = callback;
-	}
-	
-	Traverser.prototype.map = function(tree) {
-		var self = this;
-		//console.log('travin', tree._memos[self.id]);
-		//if (isExisty(tree._memos[self.id]))
-			return self.func(tree, tree.children.map(function(child) {
-				return self.map(child);
-			}));
-		//console.log('travout', tree._memos[self.id]);
-		//return tree._memos[self.id];
-	}
-	
 	global.Parser = Parser;
-	global.Traverser = Traverser;
 }(this));

@@ -107,34 +107,75 @@ var parser = (function() {
 				'$$'+ tex + '$$\n' +
 				'\\end{figure}\n';
 		},
-		cfold = new Traverser('cfold', function(self, children) {
-			console.log('cback');
-			var numVal = self.value(), 
+		isNumNode = function isNumNode(self) {
+			var allNumChildren = self.children.length? self.children.map(isNumNode).every(function(c) {return c}): false;
+			self._memos.isNum = (self.type === 'number' || allNumChildren);
+			return self._memos.isNum;
+		},
+		cfold = function cfold(self) {
+			if (!isExisty(self.parent))
+				isNumNode(self);
+			var children = self.children.map(cfold),
 				temp = null;
-			if (isNaN(numVal)) {
-				temp = self.clone();
+			if (self._memos.isNum === false) {
+				temp = self;
 				temp.children = children;
 			} else {
-				temp = new trigASTmaker.classes['number'](numVal);
+				temp = new trigASTmaker.classes['number'](self.value());
 			}
 			return temp;
-		}),
-		pifold = new Traverser('pifold', function(self, children) {
-			var temp = null;
-			if (self.type === 'call' && children.length === 1 && children[0].type === 'times') {
-				console.log('call hit', children[0]);
-				var factors = children[0].children,
-					piFactor = factors[1].type === 'constant'? 1: factors[0].type === 'constant'? 0: -1,
-					hasIntFactor = Number.isSafeInteger(factors[Number(!piFactor)].value()),
-					reducesToZero = self.selfValue === 'sin' || self.selfValue === 'tan';
-				if (piFactor !== -1 && hasIntFactor && reducesToZero)
-					return new trigASTmaker.classes['number']('0');
+		},
+		pifold = function pifold(self) {
+			children = self.children.map(pifold);
+			if (self.type === 'call') {
+				if (children.length === 1 && children[0].type === 'times') {
+					var factors = children[0].children,
+						piFactor = (factors.length > 1 && factors[1].type === 'constant')? 1: factors[0].type === 'constant'? 0: -1,
+						intFactor = (factors.length === 1)? 1: factors[Number(!piFactor)].value(),
+						isInt = Number.isSafeInteger(intFactor),
+						isEven = Number.isSafeInteger(intFactor / 2),
+						isIntAndHalf = Number.isSafeInteger(intFactor - 0.5),
+						isEvenAndHalf = Number.isSafeInteger((intFactor - 0.5) / 2),
+						reducible = isInt || isIntAndHalf;
+					console.log(reducible, piFactor, factors, factors.length);
+					if (piFactor !== -1 && reducible) {
+						var val,
+							func = self.selfValue
+							neg = false;
+						if ((func === 'sin' || func === 'tan') && isInt ||
+							(func === 'cos' || func === 'cot') && isIntAndHalf) {
+							val = 0;
+						} else if (func === 'sin') {
+							val = 1;
+							neg = !isEvenAndHalf;
+						} else if (func === 'cos') {
+							val = 1;
+							neg = !isEven;						
+						} else if (func === 'tan') {
+							val = Infinity;
+							neg = !isEvenAndHalf;
+						} else if (func === 'cot') {
+							val = Infinity;
+							neg = !isEven;
+						}
+							
+						var abs = new trigASTmaker.classes['number'](val);
+						if (!neg) {
+							return abs;
+						} else {
+							var neg = new trigASTmaker.classes['unary']('-');
+							neg.children.push(abs);
+							abs.parent = neg;
+							return neg;
+						}
+					}
+				}
 			}
 			
-			temp = self.flush();
+			var temp = self.flush();
 			temp.children = children;
 			return temp;
-		});
+		};
 
 
 	// export

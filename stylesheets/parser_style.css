@@ -34,7 +34,7 @@ header {
 	padding-bottom: .4em;
 }
 
-#expression, button#go, #texButton, #pdfButton {
+#expression, button {
 	display: inline-block;
 	vertical-align: top;
 	font-size: 15pt;
@@ -45,7 +45,7 @@ header {
 	white-space: nowrap;
 	height: 1.35em;
 	min-width: 4em;
-	width: 74%;
+	width: 64%;
 	padding: .15em 1% 0 1%;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -56,7 +56,7 @@ header {
 	color: #d33;
 }
 
-button#go, #texButton, #pdfButton {
+button {
 	height: 1.5em;
 	min-width: 2em;
 	width: 8%;
@@ -65,7 +65,7 @@ button#go, #texButton, #pdfButton {
 	font-weight: bold;
 }
 
-button#go:hover, #texButton:hover, #pdfButton:hover {
+button:hover {
 	background: #f80;
 	color: #201511;
 }

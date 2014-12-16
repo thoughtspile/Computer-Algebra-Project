@@ -3,6 +3,11 @@
 		suggest = document.getElementById('suggest'),
 		dynaList = document.getElementById('optionList'),
 		go = document.getElementById('go'),
+		astroot = null,
+		display = function() {
+			astroot.value();
+			d3renderer.draw(astroot);
+		},
 		update = function() {	
 			d3renderer.resetElement(suggest, dynaList);
 				
@@ -15,10 +20,8 @@
 			unmarkError();
 			
 			try {
-				var astroot = parser.parse(expr.innerHTML);
-				astroot.value();
-				console.log('FOLDING', parser.cfold.map(astroot))
-				d3renderer.draw(parser.pifold.map(astroot));
+				astroot = parser.parse(expr.innerHTML);
+				display();
 				logInterface.push(expr.innerHTML, parser.assembleTexModule(astroot.texify(), astroot.tikzify()));
 			} catch (err) {
 				markError(err.position);
@@ -70,6 +73,15 @@
 	
 	document.getElementById('texButton').addEventListener('click', logInterface.requestTex);
 	document.getElementById('pdfButton').addEventListener('click', logInterface.requestPdf);
+	
+	document.getElementById('cButton').addEventListener('click', function() {
+		astroot = parser.cfold(astroot);
+		display();
+	});
+	document.getElementById('piButton').addEventListener('click', function() {
+		astroot = parser.pifold(astroot);
+		display();
+	});
 	
 	d3renderer.bind('AST_area');
 	fitSVG();
