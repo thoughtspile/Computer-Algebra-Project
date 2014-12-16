@@ -18,7 +18,6 @@
 				var astroot = parser.parse(expr.innerHTML);
 				astroot.value();
 				d3renderer.draw(astroot);
-				//console.log(astroot.tikzify());
 				logInterface.push(expr.innerHTML, parser.assembleTexModule(astroot.texify(), astroot.tikzify()));
 			} catch (err) {
 				markError(err.position);

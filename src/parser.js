@@ -213,13 +213,7 @@ var parser = (function() {
 		
 		return this;
 	};
-	
-	// this might be unused [!!!]
-	// seems to create an empty node or smth
-	ASTfactory.prototype.create = function(id) {
-		return new this.classes[id]();
-	};
-	
+		
 	// prototype for generic AST node
 	function AST(selfValue) {
 		// string value
@@ -230,8 +224,14 @@ var parser = (function() {
 		this._value = null;
 		this._tex = null;
 		this._tikz = null;
+		this._memos = {};
 	};
 		
+	AST.prototype.map = function(callback, memoId) {
+		if (isExisty(this._memos[id]))
+			this._memos[id] = callback(this);
+		return this._memos[id];
+	};
 		
 	// tokenizer
 	

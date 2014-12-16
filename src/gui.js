@@ -90,6 +90,7 @@ var d3renderer = (function() {
 		what.style.top = rect.bottom+'px';
 	}
 	
+	
 	return {
 		bind: bind,
 		resizeToFit: fitSVG,
