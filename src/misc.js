@@ -1,3 +1,13 @@
+if (!Number.isSafeInteger) {
+	Number.isSafeInteger = function isSafeInteger(nVal) {
+		return typeof nVal === 'number'
+			&& isFinite(nVal)
+			&& nVal > -(Math.pow(2, 53) - 1)
+			&& nVal < Math.pow(2, 53) - 1
+			&& Math.floor(nVal) === nVal;
+	};
+}
+
 // utils
 
 // cotangent polyfill
