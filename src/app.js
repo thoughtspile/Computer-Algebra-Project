@@ -17,7 +17,8 @@
 			try {
 				var astroot = parser.parse(expr.innerHTML);
 				astroot.value();
-				d3renderer.draw(astroot);
+				console.log('FOLDING', parser.cfold.map(astroot))
+				d3renderer.draw(parser.pifold.map(astroot));
 				logInterface.push(expr.innerHTML, parser.assembleTexModule(astroot.texify(), astroot.tikzify()));
 			} catch (err) {
 				markError(err.position);
@@ -36,7 +37,7 @@
 		unmarkError = function() {
 			expr.innerHTML = expr.innerHTML.replace(/<(.*?)>/g, '');
 		},
-		fitSVG = function(output) {
+		fitSVG = function() {
 			d3renderer.resizeToFit();
 			update();
 		};
