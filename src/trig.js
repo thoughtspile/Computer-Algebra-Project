@@ -128,7 +128,7 @@ var parser = (function() {
 		pifold = function pifold(self) {
 			children = self.children.map(pifold);
 			if (self.type === 'call') {
-				if (children.length === 1 && children[0].type === 'times') {
+				if (children.length === 1 && children[0].type === 'times' && children[0].selfValue === '*') {
 					var factors = children[0].children,
 						piFactor = (factors.length > 1 && factors[1].type === 'constant')? 1: factors[0].type === 'constant'? 0: -1,
 						intFactor = (factors.length === 1)? 1: factors[Number(!piFactor)].value(),
